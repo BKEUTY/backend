@@ -69,6 +69,3 @@ INSERT INTO order_items (quantity, product_id, order_id) VALUES
 
 -- 5. Dữ liệu cho bảng CartItems
 -- Giả sử đây là các món đồ khách đang bỏ vào giỏ nhưng chưa thanh toán
-INSERT INTO cart_items (quantity, product_id,user_id) VALUES
-                                                  (2, 3,1), -- 2 chai Bioderma
-                                                  (1, 5,1); -- 1 thỏi son
