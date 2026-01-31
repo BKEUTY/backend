@@ -32,10 +32,10 @@ public class CartItemsService {
     }
     public CartItemResponseDTO toCartItemResponseDTO(CartItems cartItems) {
         Products prod = cartItems.getProduct();
-        return new CartItemResponseDTO(cartItems.getId(),prod.getId(),prod.getName(),prod.getDescription(),prod.getPrice(),prod.getImage(),cartItems.getQuantity());
+        return new CartItemResponseDTO(cartItems.getId(),prod.getId(),prod.getName(),prod.getDescription(),null,prod.getImage(),cartItems.getQuantity());
     }
     public AddToCartResponseDTO toAddToCartResponseDTO(CartItems cartItems) {
-        return new AddToCartResponseDTO(cartItems.getProduct().getId(),1,cartItems.getProduct().getPrice(),cartItems.getProduct().getName());
+        return new AddToCartResponseDTO(cartItems.getProduct().getId(),1,null,cartItems.getProduct().getName());
     }
     public ResponseEntity<AddToCartResponseDTO> addToCart(AddToCartRequest addToCartRequest) {
         Products prod = productsRepository.findById(addToCartRequest.getProductId()).get();

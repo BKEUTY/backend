@@ -47,11 +47,11 @@ public class OrderService {
             orderItem.setOrder(orderSave);
             orderItem.setProduct(product);
             orderItem.setQuantity(cartItems.getQuantity());
-            totalAmount = totalAmount +  product.getPrice()*orderItem.getQuantity();
+//            totalAmount = totalAmount +  product.getPrice()*orderItem.getQuantity();
             AddToCartResponseDTO addToCartResponseDTO = new AddToCartResponseDTO();
             addToCartResponseDTO.setProductId(product.getId());
             addToCartResponseDTO.setQuantity(cartItems.getQuantity());
-            addToCartResponseDTO.setPrice(product.getPrice());
+//            addToCartResponseDTO.setPrice(product.getPrice());
             addToCartResponseDTO.setProductName(product.getName());
             items.add(addToCartResponseDTO);
             cartItemsRepository.delete(cartItems);
@@ -94,7 +94,7 @@ public class OrderService {
             AddToCartResponseDTO addToCartResponseDTO = new AddToCartResponseDTO();
             addToCartResponseDTO.setProductId(products.getId());
             addToCartResponseDTO.setQuantity(orderItems.getQuantity());
-            addToCartResponseDTO.setPrice(products.getPrice());
+//            addToCartResponseDTO.setPrice(products.getPrice());
             addToCartResponseDTO.setProductName(products.getName());
             itemList.add(addToCartResponseDTO);
         }

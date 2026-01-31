@@ -1,0 +1,19 @@
+package com.hcmut.bkuety.dto.products.response;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class CreateProductResponseDTO {
+    private Integer id;
+    private String name;
+    private String description = "";
+    private List<String> categories = new ArrayList<>();
+    private String image = "";
+}
