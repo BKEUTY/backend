@@ -16,4 +16,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleProductVariantNotFoundException(ProductVariantNotFoundException e) {
         return  ResponseEntity.badRequest().body(e.getMessage());
     }
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<String> handleUserNotFoundException(UserNotFoundException e) {
+        return  ResponseEntity.badRequest().body(e.getMessage());
+    }
+    @ExceptionHandler(CartItemNotFound.class)
+    public ResponseEntity<CartItemNotFound> handleCartItemNotFound(CartItemNotFound e) {
+        return  ResponseEntity.badRequest().body(new CartItemNotFound(e.getMessage(),e.getCartItemId()));
+    }
 }

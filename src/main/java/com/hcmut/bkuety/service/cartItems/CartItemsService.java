@@ -5,9 +5,13 @@ import com.hcmut.bkuety.dto.cartItems.AddToCartResponseDTO;
 import com.hcmut.bkuety.dto.cartItems.CartItemResponseDTO;
 import com.hcmut.bkuety.dto.products.ProductResponseDTO;
 import com.hcmut.bkuety.entity.CartItems;
+import com.hcmut.bkuety.entity.ProductVariant;
 import com.hcmut.bkuety.entity.Products;
 import com.hcmut.bkuety.entity.Users;
+import com.hcmut.bkuety.exception.ProductVariantNotFoundException;
+import com.hcmut.bkuety.exception.UserNotFoundException;
 import com.hcmut.bkuety.repository.CartItemsRepository;
+import com.hcmut.bkuety.repository.ProductVariantsRepository;
 import com.hcmut.bkuety.repository.ProductsRepository;
 import com.hcmut.bkuety.repository.UsersRepository;
 import com.hcmut.bkuety.service.products.ProductService;
@@ -23,7 +27,7 @@ public class CartItemsService {
     @Autowired
     private CartItemsRepository cartItemsRepository;
     @Autowired
-    private ProductsRepository productsRepository;
+    private ProductVariantsRepository productVariantsRepository;
     @Autowired
     private UsersRepository usersRepository;
 
@@ -31,19 +35,40 @@ public class CartItemsService {
         return cartItemsRepository.findByUserId(userId).stream().map(this::toCartItemResponseDTO).toList();
     }
     public CartItemResponseDTO toCartItemResponseDTO(CartItems cartItems) {
-        Products prod = cartItems.getProduct();
-        return new CartItemResponseDTO(cartItems.getId(),prod.getId(),prod.getName(),prod.getDescription(),null,prod.getImage(),cartItems.getQuantity());
+
+        return CartItemResponseDTO.builder()
+                .productVariantId(cartItems.getProductVariant().getId())
+                .cartId(cartItems.getId())
+                .price(cartItems.getProductVariant().getPrice())
+                .image(cartItems.getProductVariant().getProductImageUrl())
+                .description(cartItems.getProductVariant().getDescription())
+                .name(cartItems.getProductVariant().getProductVariantName())
+                .productId(cartItems.getProductVariant().getProduct().getId())
+                .build();
     }
     public AddToCartResponseDTO toAddToCartResponseDTO(CartItems cartItems) {
-        return new AddToCartResponseDTO(cartItems.getProduct().getId(),1,null,cartItems.getProduct().getName());
+        return  AddToCartResponseDTO.builder()
+                .quantity(cartItems.getQuantity())
+                .price(cartItems.getProductVariant().getPrice())
+                .productVariantId(cartItems.getProductVariant().getId())
+                .productVariantImage(cartItems.getProductVariant().getProductImageUrl())
+                .productVariantName(cartItems.getProductVariant().getProductVariantName())
+                .build();
     }
     public ResponseEntity<AddToCartResponseDTO> addToCart(AddToCartRequest addToCartRequest) {
-        Products prod = productsRepository.findById(addToCartRequest.getProductId()).get();
-        Users user = usersRepository.findById(addToCartRequest.getUserId()).get();
-        CartItems cartItems  = new CartItems();
-        cartItems.setProduct(prod);
-        cartItems.setUser(user);
-        cartItems.setQuantity(1);
+        CartItems itemInCartItem = cartItemsRepository.findByUserIdAndProductVariantId(addToCartRequest.getUserId(),addToCartRequest.getProductVariantId());
+
+        if(itemInCartItem!= null){
+            itemInCartItem.setQuantity(itemInCartItem.getQuantity()+addToCartRequest.getQuantity());
+            cartItemsRepository.save(itemInCartItem);
+        }
+        Users user = usersRepository.findById(addToCartRequest.getUserId()).orElseThrow(()-> new UserNotFoundException("User not found"));
+        ProductVariant productVariant = productVariantsRepository.findById(addToCartRequest.getProductVariantId()).orElseThrow(() -> new ProductVariantNotFoundException("Can not find product SKU"));
+        CartItems cartItems  = CartItems.builder()
+                                        .productVariant(productVariant)
+                                        .quantity(addToCartRequest.getQuantity())
+                                        .user(user).build();
+
         return ResponseEntity.status(HttpStatus.CREATED).body(toAddToCartResponseDTO(cartItemsRepository.save(cartItems)));
 
     }

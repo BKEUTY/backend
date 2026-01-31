@@ -4,15 +4,15 @@ import com.hcmut.bkuety.dto.cartItems.AddToCartResponseDTO;
 import com.hcmut.bkuety.dto.orders.OrderItemDTO;
 import com.hcmut.bkuety.dto.orders.PlaceOrderRequest;
 import com.hcmut.bkuety.dto.orders.OrderResponseDTO;
-import com.hcmut.bkuety.entity.CartItems;
-import com.hcmut.bkuety.entity.OrderItems;
-import com.hcmut.bkuety.entity.Orders;
-import com.hcmut.bkuety.entity.Products;
+import com.hcmut.bkuety.entity.*;
+import com.hcmut.bkuety.exception.CartItemNotFound;
+import com.hcmut.bkuety.exception.UserNotFoundException;
 import com.hcmut.bkuety.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,33 +26,42 @@ public class OrderService {
     @Autowired
     private ProductsRepository productsRepository;
     @Autowired
+    private ProductVariantsRepository productVariantsRepository;
+    @Autowired
     private UsersRepository usersRepository;
     @Autowired
     private CartItemsRepository cartItemsRepository;
     public ResponseEntity<OrderResponseDTO> placeOrder (PlaceOrderRequest request){
         List<OrderItemDTO> orderItemList = request.getOrderItems();
-        Orders order = new Orders();
-        order.setOrderDate(LocalDate.now());
-        order.setAddress(request.getAddress());
-        order.setPaymentMethod(request.getPaymentMethod());
-        order.setUser(usersRepository.findById(request.getUserId()).get());
-        order.setTotal(0d);
+        Users orderUser = usersRepository.findById(request.getUserId()).orElseThrow(()->new UserNotFoundException("User not found"));
+        Orders order = Orders.builder()
+                .orderDate(LocalDate.now())
+                .address(request.getAddress())
+                .paymentMethod(request.getPaymentMethod()).build();
+
         Orders orderSave = ordersRepository.save(order);
-        Double totalAmount = 0d;
+        BigDecimal totalAmount = BigDecimal.valueOf(0);
         List<AddToCartResponseDTO> items = new ArrayList<>();
         for(OrderItemDTO orderItemDto : orderItemList){
             OrderItems  orderItem = new OrderItems();
-            CartItems cartItems = cartItemsRepository.findById(orderItemDto.getCartItemId()).get();
-            Products product = cartItems.getProduct();
+            CartItems cartItems = cartItemsRepository.findById(orderItemDto.getCartItemId()).orElseThrow(()->new CartItemNotFound("Cart item not found",orderItemDto.getCartItemId()));
+            ProductVariant productVariant = cartItems.getProductVariant();
+
             orderItem.setOrder(orderSave);
-            orderItem.setProduct(product);
+            orderItem.setProductVariant(productVariant);
             orderItem.setQuantity(cartItems.getQuantity());
-//            totalAmount = totalAmount +  product.getPrice()*orderItem.getQuantity();
-            AddToCartResponseDTO addToCartResponseDTO = new AddToCartResponseDTO();
-            addToCartResponseDTO.setProductId(product.getId());
-            addToCartResponseDTO.setQuantity(cartItems.getQuantity());
-//            addToCartResponseDTO.setPrice(product.getPrice());
-            addToCartResponseDTO.setProductName(product.getName());
+            totalAmount = totalAmount.add(
+                    productVariant.getPrice().multiply(BigDecimal.valueOf(cartItems.getQuantity()))
+            );
+            Integer currentStock = productVariant.getStockQuantity();
+            productVariant.setStockQuantity(currentStock - cartItems.getQuantity());
+            productVariantsRepository.save(productVariant);
+            AddToCartResponseDTO addToCartResponseDTO = AddToCartResponseDTO.builder()
+                                                        .price(productVariant.getPrice())
+                    .productVariantId(productVariant.getId())
+                    .productVariantName(productVariant.getProductVariantName())
+                    .quantity(cartItems.getQuantity())
+                    .build();
             items.add(addToCartResponseDTO);
             cartItemsRepository.delete(cartItems);
             orderItemsRepository.save(orderItem);
@@ -90,12 +99,13 @@ public class OrderService {
     private static List<AddToCartResponseDTO> getAddToCartResponseDTOS(List<OrderItems> items) {
         List<AddToCartResponseDTO> itemList = new ArrayList<>();
         for(OrderItems orderItems : items){
-            Products products = orderItems.getProduct();
+            ProductVariant productVariant = orderItems.getProductVariant();
             AddToCartResponseDTO addToCartResponseDTO = new AddToCartResponseDTO();
-            addToCartResponseDTO.setProductId(products.getId());
+            addToCartResponseDTO.setProductVariantId(productVariant.getId());
             addToCartResponseDTO.setQuantity(orderItems.getQuantity());
 //            addToCartResponseDTO.setPrice(products.getPrice());
-            addToCartResponseDTO.setProductName(products.getName());
+            addToCartResponseDTO.setProductVariantName(productVariant.getProductVariantName());
+            addToCartResponseDTO.setProductVariantImage(productVariant.getProductImageUrl());
             itemList.add(addToCartResponseDTO);
         }
         return itemList;
