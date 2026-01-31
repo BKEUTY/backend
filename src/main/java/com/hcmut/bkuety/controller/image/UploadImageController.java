@@ -23,18 +23,18 @@ public class UploadImageController
     }
     @PostMapping("/upload/product")
     public ResponseEntity<?> uploadProductImage(@RequestParam("file") MultipartFile file,
-                                         @RequestParam("productId") Integer fileName) throws IOException {
-        return ResponseEntity.ok(cloudinaryService.uploadFile(file, "products",fileName.toString()));
+                                         @RequestParam("productId") String fileName) throws IOException {
+        return ResponseEntity.ok(cloudinaryService.uploadFile(file, "product",fileName));
     }
     @PostMapping("/upload/sku")
     public ResponseEntity<?> uploadSKUImage(@RequestParam("file") MultipartFile file,
-                                                @RequestParam("skuId") Integer fileName) throws IOException {
-        return ResponseEntity.ok(cloudinaryService.uploadFile(file, "skus",fileName.toString()));
+                                                @RequestParam("skuId") String fileName) throws IOException {
+        return ResponseEntity.ok(cloudinaryService.uploadFile(file, "sku",fileName));
     }
     @PostMapping("/upload/user")
     public ResponseEntity<?> uploadUserAvatar(@RequestParam("file") MultipartFile file,
-                                         @RequestParam("productId") Integer fileName) throws IOException {
-        return ResponseEntity.ok(cloudinaryService.uploadFile(file, "products",fileName.toString()));
+                                         @RequestParam("productId") String fileName) throws IOException {
+        return ResponseEntity.ok(cloudinaryService.uploadFile(file, "avatar",fileName));
     }
 
 

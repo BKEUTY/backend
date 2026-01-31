@@ -21,6 +21,9 @@ spring:
       mode: always
 
 cloudinary:
-  cloud-name: ${CLOUDINARY_NAME}
-  api-key: ${CLOUDINARY_API_KEY}
-  api-secret: ${CLOUDINARY_API_SECRET}
+#  cloud-name: ${CLOUDINARY_NAME}
+#  api-key: ${CLOUDINARY_API_KEY}
+#  api-secret: ${CLOUDINARY_API_SECRET}
+  cloud-name: dyzcl7cbe
+  api-key: 643964737283187
+  api-secret: W4zCsQq3qscuxqFWUpW3es4rQMs
