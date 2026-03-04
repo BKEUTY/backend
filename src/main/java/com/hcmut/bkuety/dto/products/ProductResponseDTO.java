@@ -1,5 +1,6 @@
 package com.hcmut.bkuety.dto.products;
 
+import com.hcmut.bkuety.dto.products.request.ProductOptionValueDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,5 +18,6 @@ public class ProductResponseDTO {
     private String description;
     private String image;
     private List<String> categories;
+    private List<ProductOptionValueDTO> options;
 
 }
